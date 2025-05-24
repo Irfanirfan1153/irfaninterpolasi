@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Alat Konversi Nilai Signal Analog </title>
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        margin: 10px auto;
+        padding: 0 10px;
+        max-width: 480px;
+        width: 100%;
+    }
+
+    label, input, select {
+        display: block;
+        margin-bottom: 10px;
+        width: 100%;
+    }
+
+    input[type="number"], select {
+        padding: 6px;
+        font-size: 16px;
+    }
+
+    button {
+        padding: 8px 12px;
+        font-size: 16px;
+        cursor: pointer;
+        margin-top: 10px;
+        width: 100%;
+    }
+
+    .hasil {
+        margin-top: 20px;
+        font-weight: bold;
+        font-size: 18px;
+    }
+
+    #lang_buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    #lang_buttons button {
+        flex: 1 1 48%;
+    }
+
+    @media (max-width: 400px) {
+        button, input, select {
+            font-size: 14px;
+        }
+
+        .hasil {
+            font-size: 16px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div id="lang_buttons">
+    <button id="btn_id">Bahasa Indonesia</button>
+    <button id="btn_cn">中文 (Mandarin)</button>
+</div>
+
+<h1 id="title"> 模拟信号数值转换工具</h1>
+
+<label for="min_input" id="label_min_input">Minimal nilai input:</label>
+<input type="number" id="min_input" value="0" />
+
+<label for="max_input" id="label_max_input">Maksimal nilai input:</label>
+<input type="number" id="max_input" value="100" />
+
+<label for="nilai_input" id="label_nilai_input">Nilai yang akan dikonversi:</label>
+<input type="number" id="nilai_input" value="50" />
+
+<label for="min_output" id="label_min_output">Minimal nilai output:</label>
+<input type="number" id="min_output" value="0" />
+
+<label for="max_output" id="label_max_output">Maksimal nilai output:</label>
+<input type="number" id="max_output" value="1" />
+
+<label for="mode_convert" id="label_mode_convert">Mode konversi:</label>
+<select id="mode_convert">
+    <option value="normal">Konversi Biasa (Input → Output)</option>
+    <option value="reverse">Konversi Terbalik (Output → Input)</option>
+</select>
+
+<button id="btn_hitung">Hitung</button>
+
+<div class="hasil" id="hasil_output">Hasil konversi: -</div>
+
+<script>
+    const texts = {
+        id: {
+            title: "Alat Konversi Nilai Signal Analog",
+            min_input: "Minimal nilai input:",
+            max_input: "Maksimal nilai input:",
+            nilai_input: "Nilai yang akan dikonversi:",
+            min_output: "Minimal nilai output:",
+            max_output: "Maksimal nilai output:",
+            hitung: "Hitung",
+            hasil_konversi: "Hasil konversi: ",
+            error_invalid: "Input tidak valid",
+            error_minmax_input: "Minimal input harus ≤ maksimal input",
+            error_minmax_output: "Minimal output harus ≤ maksimal output",
+            error_rentang_sama: "Rentang input tidak boleh sama",
+            label_mode_convert: "Mode konversi:"
+        },
+        cn: {
+            title: "模拟信号数值转换工具",
+            min_input: "输入最小值 (mA/mV/V)：",
+            max_input: "输入最大值(mA/mV/V)：",
+            nilai_input: "实际值要转(mA/Kg/mV/等等)：",
+            min_output: "输出最小值 (Kg/kPa/等等)：",
+            max_output: "输出最大值(Kg/kPa/等等)：",
+            hitung: "计算",
+            hasil_konversi: "转换结果：",
+            error_invalid: "输入无效",
+            error_minmax_input: "最小输入值必须小于或等于最大输入值",
+            error_minmax_output: "最小输出值必须小于或等于最大输出值",
+            error_rentang_sama: "输入范围不能相同",
+            label_mode_convert: "转换模式："
+        }
+    };
+
+    let currentLang = 'id';
+
+    const minInputEl = document.getElementById('min_input');
+    const maxInputEl = document.getElementById('max_input');
+    const nilaiInputEl = document.getElementById('nilai_input');
+    const minOutputEl = document.getElementById('min_output');
+    const maxOutputEl = document.getElementById('max_output');
+    const hasilOutputEl = document.getElementById('hasil_output');
+    const btnHitung = document.getElementById('btn_hitung');
+    const modeConvertEl = document.getElementById('mode_convert');
+
+    const titleEl = document.getElementById('title');
+    const labelMinInputEl = document.getElementById('label_min_input');
+    const labelMaxInputEl = document.getElementById('label_max_input');
+    const labelNilaiInputEl = document.getElementById('label_nilai_input');
+    const labelMinOutputEl = document.getElementById('label_min_output');
+    const labelMaxOutputEl = document.getElementById('label_max_output');
+    const labelModeConvertEl = document.getElementById('label_mode_convert');
+
+    const btnID = document.getElementById('btn_id');
+    const btnCN = document.getElementById('btn_cn');
+
+    function setLanguage(lang) {
+        currentLang = lang;
+        titleEl.textContent = texts[lang].title;
+        labelMinInputEl.textContent = texts[lang].min_input;
+        labelMaxInputEl.textContent = texts[lang].max_input;
+        labelNilaiInputEl.textContent = texts[lang].nilai_input;
+        labelMinOutputEl.textContent = texts[lang].min_output;
+        labelMaxOutputEl.textContent = texts[lang].max_output;
+        btnHitung.textContent = texts[lang].hitung;
+        labelModeConvertEl.textContent = texts[lang].label_mode_convert;
+        hasilOutputEl.textContent = texts[lang].hasil_konversi + "-";
+
+        modeConvertEl.options[0].text = lang === 'id' ? "Konversi Biasa (Input → Output)" : "常规转换 (输入 → 输出)";
+        modeConvertEl.options[1].text = lang === 'id' ? "Konversi Terbalik (Output → Input)" : "反向转换 (输出 → 输入)";
+    }
+
+    function konversi(nilai, minInput, maxInput, minOutput, maxOutput) {
+        if (maxInput === minInput) {
+            return texts[currentLang].error_rentang_sama;
+        }
+        const output = ((nilai - minInput) / (maxInput - minInput)) * (maxOutput - minOutput) + minOutput;
+        return output;
+    }
+
+    function konversiTerbalik(nilai, minInput, maxInput, minOutput, maxOutput) {
+        if (maxOutput === minOutput) {
+            return texts[currentLang].error_rentang_sama;
+        }
+        const input = ((nilai - minOutput) / (maxOutput - minOutput)) * (maxInput - minInput) + minInput;
+        return input;
+    }
+
+    btnHitung.addEventListener('click', () => {
+        const minInput = parseFloat(minInputEl.value);
+        const maxInput = parseFloat(maxInputEl.value);
+        const nilai = parseFloat(nilaiInputEl.value);
+        const minOutput = parseFloat(minOutputEl.value);
+        const maxOutput = parseFloat(maxOutputEl.value);
+        const mode = modeConvertEl.value;
+
+        if (isNaN(minInput) || isNaN(maxInput) || isNaN(nilai) || isNaN(minOutput) || isNaN(maxOutput)) {
+            hasilOutputEl.textContent = texts[currentLang].hasil_konversi + texts[currentLang].error_invalid;
+            return;
+        }
+        if (minInput > maxInput) {
+            hasilOutputEl.textContent = texts[currentLang].hasil_konversi + texts[currentLang].error_minmax_input;
+            return;
+        }
+        if (minOutput > maxOutput) {
+            hasilOutputEl.textContent = texts[currentLang].hasil_konversi + texts[currentLang].error_minmax_output;
+            return;
+        }
+
+        let hasil;
+        if (mode === 'normal') {
+            hasil = konversi(nilai, minInput, maxInput, minOutput, maxOutput);
+        } else {
+            hasil = konversiTerbalik(nilai, minInput, maxInput, minOutput, maxOutput);
+        }
+
+        if (typeof hasil === 'string') {
+            hasilOutputEl.textContent = texts[currentLang].hasil_konversi + hasil;
+        } else {
+            hasilOutputEl.textContent = texts[currentLang].hasil_konversi + hasil.toFixed(4);
+        }
+    });
+
+    btnID.addEventListener('click', () => setLanguage('id'));
+    btnCN.addEventListener('click', () => setLanguage('cn'));
+
+    setLanguage('id');
+</script>
+
+</body>
+</html>
